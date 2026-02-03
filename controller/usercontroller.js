@@ -18,41 +18,74 @@ const Addregisteruser=async(req,res)=>{
         console.log(error)
     }
 }
-const Login=async(req,res)=>{
-    try {
-        const{email,password}=req.body;
-        const matcheduser=await userschema.findOne({
-        email:email,
+// const Login=async(req,res)=>{
+//     try {
+//         const{email,password}=req.body;
+//         const matcheduser=await userschema.findOne({
+//         email:email,
     
-    })
-    if(!matcheduser)
-        res.json({success:false,message:"user not found"})
+//     })
+//     if(!matcheduser)
+//         res.json({success:false,message:"user not found"})
 
-    console.log(matcheduser);
-    const checkpass =await bcryptjs.compare(password,matcheduser.password);
-    if(!checkpass){
-        return res.json({success:false,message:'invalid credentials'});
-    }
-           if(!matcheduser){
-            res.json({success:false,message:"invalid user"})
-           }else{
-            const Token=await jwt.sign({id:matcheduser._id,name:matcheduser.name},SECRET_KEY)
-            console.log(Token)
-           res.json({success:true,message:"Login successfull",Token})
+//     console.log(matcheduser);
+//     const checkpass =await bcryptjs.compare(password,matcheduser.password);
+//     if(!checkpass){
+//         return res.json({success:false,message:'invalid credentials'});
+//     }
+//            if(!matcheduser){
+//             res.json({success:false,message:"invalid user"})
+//            }else{
+//             const Token=await jwt.sign({id:matcheduser._id,name:matcheduser.name},SECRET_KEY)
+//             console.log(Token)
+//            res.json({success:true,message:"Login successfull",Token})
+            
+//         }
+//     if(matcheduser.password !==password){
+//         res.json({success:false,message:"password not match"})
+//     }
+//             res.json({success:true,message:"Login successfull",matcheduser})
+
         
-        }
-    if(matcheduser.password !==password){
-        res.json({success:false,message:"password not match"})
-    }
-            res.json({success:true,message:"Login successfull",matcheduser})
+//     } catch (error) {
+//         console.log(error)
+//                    res.json({success:false,message:"server error"})
 
-        
-    } catch (error) {
-        console.log(error)
-                   res.json({success:false,message:"server error"})
+//     }
+// }
+const Login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
+    const matcheduser = await userschema.findOne({ email });
+    if (!matcheduser) {
+      return res.json({ success: false, message: "User not found" });
     }
-}
+
+    const isMatch = await bcryptjs.compare(password, matcheduser.password);
+    if (!isMatch) {
+      return res.json({ success: false, message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { id: matcheduser._id, name: matcheduser.name },
+      SECRET_KEY
+    );
+
+    return res.json({
+      success: true,
+      message: "Login successful",
+      Token: token,
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
 
 const Getuser=async(req,res)=>{
     try {

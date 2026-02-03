@@ -1,39 +1,44 @@
+require('dotenv').config();
 const express = require('express');
-//2
-const app=express();
-//cross origin resource sharing
-const cors=require('cors')
- app.use(cors())
- app.use(express.json())
-//3
-const connectToMongo = require("./db")
+const app = express();
+const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+
+app.use(cors({
+  origin: [
+    "https://device-manager-frontend.vercel.app",
+    "http://localhost:3000"
+  ],
+  credentials: true
+}));
+
+app.use(express.json());
+
+// 🔥 CREATE UPLOADS FOLDER IF NOT EXISTS (VERY IMPORTANT)
+const uploadPath = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath);
+}
+
+// Serve images
+app.use('/uploads', express.static(uploadPath));
+
+// DB
+const connectToMongo = require("./db");
 connectToMongo();
-//4
-const portno=5000;
-app.listen(portno,()=>{
-    console.log("server is running on portnumber"  + portno)
 
+const portno = process.env.PORT || 5000;
+app.listen(portno, () => {
+  console.log("Server running on port " + portno);
 });
-app.get('/api',(req,res)=>{
-    res.send("Hello postman")
-})
 
-app.use('/api/device',require('./routes/deviceroute'))
-app.use('/api/user',require('./routes/userroute'))
+app.get('/api', (req, res) => {
+  res.send("Hello postman");
+});
 
-app.use('/uploads', express.static('uploads'));
-app.use('/api/admin', require('./routes/adminroute'))
-
-const cartroute = require('./routes/cartroutes');
-app.use('/api/cart', cartroute);
-
-const orderroutes = require("./routes/orderroutes");
-
-app.use("/api/order", orderroutes);
-
-
-// const orderRoutes = require("./routes/orderroutes");
-
-// app.use("/api/order", orderRoutes);
-
-
+app.use('/api/device', require('./routes/deviceroute'));
+app.use('/api/user', require('./routes/userroute'));
+app.use('/api/admin', require('./routes/adminroute'));
+app.use('/api/cart', require('./routes/cartroutes'));
+app.use('/api/order', require("./routes/orderroutes"));

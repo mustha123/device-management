@@ -47,7 +47,6 @@ const AdminLogin = async (req, res) => {
     const { email, password } = req.body;
 
     const matcheduser = await Admin.findOne({ email });
-
     if (!matcheduser) {
       return res.json({ success: false, message: "Invalid Email" });
     }
@@ -57,27 +56,27 @@ const AdminLogin = async (req, res) => {
       return res.json({ success: false, message: "Incorrect Password" });
     }
 
-    //  Generate JWT using password + secret key
+    // ✅ FIXED JWT
     const token = jwt.sign(
-      { 
+      {
         id: matcheduser._id,
         role: matcheduser.role,
-        email: matcheduser.email
+        email: matcheduser.email,
       },
-      SECRET_KEY + password
+      SECRET_KEY
     );
 
     return res.json({
       success: true,
       message: "Login Successful",
-      adminToken:token
+      adminToken: token,
     });
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
 
 
 module.exports = { AdminLogin,Register };
